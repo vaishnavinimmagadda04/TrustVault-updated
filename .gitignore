@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+**/publish/
+Backend/TrustVault.API/wwwroot/
+**/node_modules/
+**/dist/
+**/.angular/
+**/Uploads/
+.env
+*.user
+.vscode/

@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: trustvault-api
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: ./Backend/TrustVault.API/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: ASPNETCORE_URLS
+        value: http://0.0.0.0:10000
+      - key: AllowedHosts
+        value: "*"
+      - key: ConnectionStrings__TrustVault
+        sync: false
+      - key: Jwt__Key
+        sync: false
+      - key: Jwt__Issuer
+        value: TrustVault.API
+      - key: Jwt__Audience
+        value: TrustVault.UI
+      - key: FrontendOrigin
+        sync: false
+      - key: Storage__UploadDirectory
+        value: /app/Uploads
+    disk:
+      name: trustvault-uploads
+      mountPath: /app/Uploads
+      sizeGB: 1
+
+  - type: web
+    name: trustvault-ui
+    runtime: static
+    buildCommand: cd Frontend/trustvault-ui && npm ci && npm run build:render
+    staticPublishPath: ./Frontend/trustvault-ui/dist/trustvault-ui/browser
+    envVars:
+      - key: TRUSTVAULT_API_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
