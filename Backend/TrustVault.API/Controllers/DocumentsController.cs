@@ -90,7 +90,7 @@ public sealed class DocumentsController(
     [HttpPost("upload")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(11 * 1024 * 1024)]
-    public async Task<ActionResult<DocumentResponse>> Upload([FromForm] string title, [FromForm] string category, [FromForm] IFormFile file)
+    public async Task<ActionResult<DocumentResponse>> Upload([FromForm] string title, [FromForm] string category, IFormFile file)
     {
         if (!User.IsInRole("Admin") && !User.IsInRole("Owner"))
         {

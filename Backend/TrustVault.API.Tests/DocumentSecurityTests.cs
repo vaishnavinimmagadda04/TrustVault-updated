@@ -19,6 +19,20 @@ namespace TrustVault.API.Tests;
 public sealed class DocumentSecurityTests
 {
     [Fact]
+    public async Task SwaggerDocumentIncludesMultipartDocumentUpload()
+    {
+        using var factory = new TestApiFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/swagger/v1/swagger.json");
+        var content = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("/api/document/upload", content);
+        Assert.Contains("multipart/form-data", content);
+    }
+
+    [Fact]
     public async Task GranteeCanViewUntilAccessIsRevokedAndDenialsAreAudited()
     {
         using var factory = new TestApiFactory();
