@@ -17,8 +17,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var connectionString = builder.Configuration.GetConnectionString("TrustVault")
     ?? throw new InvalidOperationException("Configure ConnectionStrings__TrustVault.");
-var databaseProvider = DatabaseConnectionSettings.ResolveProvider(
-    builder.Configuration["Database:Provider"], connectionString);
+var databaseProvider = builder.Environment.IsProduction()
+    ? "PostgreSQL"
+    : DatabaseConnectionSettings.ResolveProvider(builder.Configuration["Database:Provider"], connectionString);
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     if (databaseProvider.Equals("PostgreSQL", StringComparison.OrdinalIgnoreCase))
@@ -64,6 +65,7 @@ builder.Services.AddAuthorization(options =>
 });
 
 var app = builder.Build();
+app.Logger.LogInformation("Using database provider {DatabaseProvider}", databaseProvider);
 if (databaseProvider.Equals("PostgreSQL", StringComparison.OrdinalIgnoreCase))
 {
     using var scope = app.Services.CreateScope();
