@@ -6,12 +6,17 @@ public static class DatabaseConnectionSettings
 {
     public static string ResolveProvider(string? configuredProvider, string connectionString)
     {
+        if (IsPostgresUrl(connectionString))
+        {
+            return "PostgreSQL";
+        }
+
         if (!string.IsNullOrWhiteSpace(configuredProvider))
         {
             return configuredProvider;
         }
 
-        return IsPostgresUrl(connectionString) ? "PostgreSQL" : "SqlServer";
+        return "SqlServer";
     }
 
     public static string NormalizePostgresConnectionString(string connectionString)
