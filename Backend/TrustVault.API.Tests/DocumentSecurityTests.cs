@@ -19,6 +19,23 @@ namespace TrustVault.API.Tests;
 public sealed class DocumentSecurityTests
 {
     [Fact]
+    public async Task CorsAllowsConfiguredLocalAndRenderFrontendOrigins()
+    {
+        using var factory = new TestApiFactory();
+        using var client = factory.CreateClient();
+        using var request = new HttpRequestMessage(HttpMethod.Options, "/api/auth/login");
+        request.Headers.Add("Origin", "https://trustvault-updated-1.onrender.com");
+        request.Headers.Add("Access-Control-Request-Method", "POST");
+        request.Headers.Add("Access-Control-Request-Headers", "content-type");
+
+        using var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal("https://trustvault-updated-1.onrender.com",
+            response.Headers.GetValues("Access-Control-Allow-Origin").Single());
+    }
+
+    [Fact]
     public async Task SwaggerDocumentIncludesMultipartDocumentUpload()
     {
         using var factory = new TestApiFactory();
@@ -163,7 +180,7 @@ public sealed class DocumentSecurityTests
             builder.UseSetting("Jwt:Issuer", "TrustVault.Tests");
             builder.UseSetting("Jwt:Audience", "TrustVault.Tests");
             builder.UseSetting("Storage:UploadDirectory", uploadDirectory);
-            builder.UseSetting("FrontendOrigin", "http://localhost");
+            builder.UseSetting("FrontendOrigin", "http://localhost:4200;https://trustvault-updated-1.onrender.com");
             builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(
                 new Dictionary<string, string?>
                 {
@@ -171,7 +188,7 @@ public sealed class DocumentSecurityTests
                     ["Jwt:Issuer"] = "TrustVault.Tests",
                     ["Jwt:Audience"] = "TrustVault.Tests",
                     ["Storage:UploadDirectory"] = uploadDirectory,
-                    ["FrontendOrigin"] = "http://localhost"
+                    ["FrontendOrigin"] = "http://localhost:4200;https://trustvault-updated-1.onrender.com"
                 }));
             builder.ConfigureTestServices(services =>
             {

@@ -20,8 +20,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<DocumentAccessService>();
+var frontendOrigins = (builder.Configuration["FrontendOrigin"] ?? "http://localhost:4200")
+    .Split([',', ';'], StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 builder.Services.AddCors(options => options.AddPolicy("Angular", policy =>
-    policy.WithOrigins(builder.Configuration["FrontendOrigin"] ?? "http://localhost:4200")
+    policy.WithOrigins(frontendOrigins)
         .AllowAnyHeader().AllowAnyMethod()));
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
