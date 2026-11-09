@@ -15,8 +15,25 @@ if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+var connectionString = builder.Configuration.GetConnectionString("TrustVault")
+    ?? throw new InvalidOperationException("Configure ConnectionStrings__TrustVault.");
+var databaseProvider = DatabaseConnectionSettings.ResolveProvider(
+    builder.Configuration["Database:Provider"], connectionString);
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("TrustVault")));
+{
+    if (databaseProvider.Equals("PostgreSQL", StringComparison.OrdinalIgnoreCase))
+    {
+        options.UseNpgsql(DatabaseConnectionSettings.NormalizePostgresConnectionString(connectionString));
+    }
+    else if (databaseProvider.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
+    {
+        options.UseSqlServer(connectionString);
+    }
+    else
+    {
+        throw new InvalidOperationException($"Unsupported database provider '{databaseProvider}'.");
+    }
+});
 builder.Services.AddScoped<JwtTokenService>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<DocumentAccessService>();
@@ -47,6 +64,13 @@ builder.Services.AddAuthorization(options =>
 });
 
 var app = builder.Build();
+if (databaseProvider.Equals("PostgreSQL", StringComparison.OrdinalIgnoreCase))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.EnsureCreatedAsync();
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseDefaultFiles();

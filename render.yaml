@@ -12,6 +12,8 @@ services:
         value: http://0.0.0.0:10000
       - key: AllowedHosts
         value: "*"
+      - key: Database__Provider
+        value: PostgreSQL
       - key: ConnectionStrings__TrustVault
         sync: false
       - key: Jwt__Key

@@ -53,7 +53,7 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
             entity.Property(log => log.Action).HasMaxLength(40).IsRequired();
             entity.Property(log => log.IpAddress).HasMaxLength(45);
             entity.Property(log => log.Details).HasMaxLength(1000);
-            entity.Property(log => log.Timestamp).HasDefaultValueSql("SYSUTCDATETIME()");
+            entity.Property(log => log.Timestamp).HasDefaultValueSql("CURRENT_TIMESTAMP");
             entity.HasIndex(log => log.Timestamp);
             entity.HasOne(log => log.User).WithMany().HasForeignKey(log => log.UserId).OnDelete(DeleteBehavior.NoAction);
         });
